@@ -11,10 +11,19 @@ import UIKit
 class TodoListViewController: UITableViewController {
 
     var itemArray = ["Buy eggs","Buy milk","Buy chicken"];
+    //Data storage function
+    let defaults = UserDefaults.standard;
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        if let items = defaults.array(forKey: "itemArray") as? [String] {
+            itemArray = items;
+        }
+    }
+    
+    override func didReceiveMemoryWarning() {
+        print("ReceivedMemoryWarning");
     }
 
 
@@ -53,10 +62,11 @@ class TodoListViewController: UITableViewController {
         var alertTextField = UITextField();
         let alert = UIAlertController(title: "Add new Todoey Item", message: "", preferredStyle: .alert);
         
-        let addAction = UIAlertAction(title: "Add Item", style: .default) { (action) in
+        let addAction = UIAlertAction(title: "Add", style: .default) { (action) in
             //print("Item add handle here");
             if alertTextField.text != nil {
                 self.itemArray.append(alertTextField.text!);
+                self.defaults.set(self.itemArray, forKey: "itemArray");
                 self.tableView.reloadData();
             }
         }
