@@ -13,26 +13,29 @@ class TodoListViewController: UITableViewController {
     //var itemArray = ["Buy eggs","Buy milk","Buy chicken"];
     var itemArray = [TodoItem]();
     //Data storage function
-    let defaults = UserDefaults.standard;
+    //let defaults = UserDefaults.standard;
+    
+    let filePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("ItemList.plist");
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        let item1 = TodoItem.init(title: "Buy eggs");
-        let item2 = TodoItem.init(title: "Buy milk");
-        let item3 = TodoItem.init(title: "Buy chicken");
-        let item4 = TodoItem.init(title: "Buy bread");
-        let item5 = TodoItem.init(title: "Buy butter");
-        
-        itemArray.append(item1);
-        itemArray.append(item2);
-        itemArray.append(item3);
-        itemArray.append(item4);
-        itemArray.append(item5);
-        
-        if let items = defaults.array(forKey: "itemArray") as? [TodoItem] {
-            itemArray = items;
-        }
+//        let item1 = TodoItem.init(title: "Buy eggs");
+//        let item2 = TodoItem.init(title: "Buy milk");
+//        let item3 = TodoItem.init(title: "Buy chicken");
+//        let item4 = TodoItem.init(title: "Buy bread");
+//        let item5 = TodoItem.init(title: "Buy butter");
+//
+//        itemArray.append(item1);
+//        itemArray.append(item2);
+//        itemArray.append(item3);
+//        itemArray.append(item4);
+//        itemArray.append(item5);
+        loadItemData();
+        /// Data storage using UserDefaults
+//        if let items = defaults.array(forKey: "itemArray") as? [TodoItem] {
+//            itemArray = items;
+//        }
     }
     
     override func didReceiveMemoryWarning() {
@@ -59,7 +62,7 @@ class TodoListViewController: UITableViewController {
 //        } else {
 //            cell.accessoryType = .none
 //        }
-        tableView.reloadData();
+        //tableView.reloadData();
         return cell;
     }
     
@@ -72,6 +75,7 @@ class TodoListViewController: UITableViewController {
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done;
         
         tableView.cellForRow(at: indexPath)?.accessoryType = tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark ? .none : .checkmark;
+        saveItemData();
         
 //        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
 //        tableView.cellForRow(at: indexPath)?.accessoryType = .none;
@@ -93,8 +97,8 @@ class TodoListViewController: UITableViewController {
             //print("Item add handle here");
             if alertTextField.text != nil {
                 self.itemArray.append(TodoItem.init(title: alertTextField.text!));
-                self.defaults.set(self.itemArray, forKey: "itemArray");
-                self.tableView.reloadData();
+                //self.defaults.set(self.itemArray, forKey: "itemArray");
+                self.saveItemData();
             }
         }
         
@@ -109,6 +113,34 @@ class TodoListViewController: UITableViewController {
         
         present(alert, animated: true, completion: nil);
         
+    }
+    
+    //MARK - Data Manipulation Methods
+    
+    func saveItemData(){
+        
+        let encoder = PropertyListEncoder();
+        do {
+            let data = try encoder.encode(itemArray);
+            try data.write(to: filePath!);
+            tableView.reloadData();
+        } catch {
+            print("Error encoding \(error)");
+        }
+        
+    }
+    
+    func loadItemData(){
+        
+        let decoder = PropertyListDecoder();
+        
+        if let data = try? Data(contentsOf: filePath!) {
+            do {
+            itemArray = try decoder.decode([TodoItem].self, from: data);
+            } catch {
+                print("Error decoding : \(error)");
+            }
+        }
     }
     
 }
